@@ -1,6 +1,66 @@
+<script setup>
+    import { ref } from 'vue'
+    import { useRouter } from 'vue-router'
+    import { useAuthStore } from '../stores/auth'
+    import axios from 'axios'
+    import DownArrow from '@/assets/icons/down-arrow.svg'
+    import HomeIcon from '@/assets/icons/home.svg'
+    import PeopleIcon from '@/assets/icons/people.svg'
+    import SimulateIcon from '@/assets/icons/simulate.svg'
+
+    import Home from '@/components/Home.vue'
+    import Clients from '@/components/Clients.vue'
+    import Simulations from '@/components/Simulation.vue'
+    import LogoutIcon from '@/assets/icons/logout.svg'
+
+    
+
+    const dashboard_category = ref('home')
+
+    const logout = () => {
+        auth.logout()
+        router.push('/')
+    }
+
+    const modifyCategory = (category) => {
+        dashboard_category.value = category
+        console.log('Category modified to:', dashboard_category.value)
+    }
+</script>
+
 <template>
-    <div>
-        <h1>Dashboard</h1>
-        <p>Coucou Simulio</p>
+    <div class="flex flex-col items-center justify-center w-full h-screen bg-white">
+        <div class="flex w-full h-screen">
+            <section class="flex flex-col items-center h-full w-64 border-r border-gray-200 shadow-sm pr-4 justify-evenly">
+                <div class="flex items-center justify-center w-full h-32 p-10">
+                    <img src="@/assets/icons/Simulio_logo.svg" alt="Simulio Logo" class="w-32 mb-4">
+                </div>
+                <div class="flex flex-col items-center justify-center w-full h-16">
+                    <button class="w-full rounded-md border border-transparent py-2 px-4 flex items-center gap-4 text-center text-lg transition-all text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" @click="modifyCategory('home')">
+                        <img :src="HomeIcon" class="w-4" alt="">
+                        Home
+                    </button>
+                </div>
+                <div class="flex flex-col items-center justify-start w-full gap-2 h-1/2">
+                    <button class="w-full rounded-md border border-transparent py-2 px-4 flex items-center gap-4 text-center text-lg transition-all text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" @click="modifyCategory('clients')">
+                        <img :src="PeopleIcon" class="w-4" alt="">
+                        Clients
+                    </button>
+                    <button class="w-full rounded-md border border-transparent py-2 px-4 flex items-center gap-4 text-center text-lg transition-all text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" @click="modifyCategory('simulations')">
+                        <img :src="SimulateIcon" class="w-4" alt="">
+                        Simulations
+                    </button>
+                </div>
+                <button class="w-full rounded-md border border-transparent py-2 px-4 flex items-center gap-4 text-center text-lg transition-all text-slate-600 hover:bg-red-100 focus:bg-red-100 active:bg-red-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" @click="logout()">
+                    <img :src="LogoutIcon" class="w-4" alt="">
+                    Logout
+                </button>
+            </section>
+            <div class="flex flex-col items-center justify-start w-full h-full">
+                <Home v-if="dashboard_category == 'home'" />
+                <Clients v-if="dashboard_category == 'clients'" :clients="clients" @get-clients="getClients" />
+                <Simulations v-if="dashboard_category == 'simulations'" :clients="clients" @get-clients="getClients" />
+            </div>
+        </div>
     </div>
 </template>

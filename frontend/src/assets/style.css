@@ -1,1 +1,89 @@
 @import 'tailwindcss';
+
+.range-input {
+    -webkit-appearance: none;
+    min-width: 8rem;
+    width: 16rem;
+    height: 4px;
+    border-radius: 5px;
+    background: rgba(61, 25, 61, 0.39);
+    outline: none;
+}
+
+.range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: rgb(61, 25, 61);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.range-input::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: rgb(61, 25, 61);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.link-underline {
+		border-bottom-width: 0;
+		background-image: linear-gradient(transparent, transparent), linear-gradient(#fff, #fff);
+		background-size: 0 2px;
+		background-position: 0 100%;
+		background-repeat: no-repeat;
+		transition: background-size .5s ease-in-out;
+}
+
+.link-underline-black {
+    background-image: linear-gradient(transparent, transparent), linear-gradient(black, black)
+}
+
+.link-underline:hover {
+    background-size: 100% 2px;
+    background-position: 0 100%
+}
+
+.animate-wave {
+    display: inline-block;
+    animation: wave 2s infinite;
+    transform-origin: 70% 70%;
+}
+
+@keyframes wave {
+    0% { transform: rotate(0deg); }
+    10% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    30% { transform: rotate(14deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+    60% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@theme {
+    --font-primary: "Inter", sans-serif; 
+    --color-simuiolet-50: #D1C1D8;
+    --color-simuiolet-100: #BBA2C5;
+    --color-simuiolet-200: #A483B2;
+    --color-simuiolet-300: #8D649E;
+    --color-simuiolet-400: #725080;
+    --color-simuiolet-500: #573D62;
+    --color-simuiolet-600: #50395A;
+    --color-simuiolet-700: #3E2B45;
+    --color-simuiolet-800: #312338;
+    --color-simuiolet-900: #251A2A;
+
+    --color-simugreen-50: #C1E5D5;
+    --color-simugreen-100: #A3D8C0;
+    --color-simugreen-200: #84CBAB;
+    --color-simugreen-300: #65BF96;
+    --color-simugreen-400: #49AF81;
+    --color-simugreen-500: #3C8F69;
+    --color-simugreen-600: #347B5B;
+    --color-simugreen-700: #2B674C;
+    --color-simugreen-800: #22523D;
+    --color-simugreen-900: #1A3E2E;
+}

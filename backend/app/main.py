@@ -1,40 +1,49 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app import auth
-import app.models
-from app.database import Base, engine
-from sqlalchemy.exc import OperationalError
-import time
 
-app = FastAPI()
+from app.api.core.config import settings
+from app.api.v1.endpoints import auth, clients, simulations, users
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.VERSION,
+    debug=settings.DEBUG,
+    openapi_url="/api/v1/openapi.json",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
 
+app.include_router(auth.router, prefix="/api/v1/auth")
+app.include_router(clients.router, prefix="/api/v1/clients") 
+app.include_router(simulations.router, prefix="/api/v1/simulations")
+app.include_router(users.router, prefix="/api/v1/users")
 
-def wait_for_db(retries=10, delay=3):
-    for i in range(retries):
-        try:
-            with engine.connect() as connection:
-                connection.execute("SELECT 1")
-            print("Database is ready!")
-            return
-        except OperationalError:
-            print(f"Database not ready, retrying in {delay} seconds...")
-            time.sleep(delay)
-    raise Exception("Could not connect to the database after several retries.")
+@app.get("/")
+def read_root():
+    return {
+        "message": "Simulio API", 
+        "version": settings.VERSION,
+        "docs": "/docs"
+    }
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
-    wait_for_db()
-    Base.metadata.create_all(bind=engine)
-
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "main:app", 
+        host="0.0.0.0", 
+        port=8000, 
+        reload=settings.DEBUG
+    )
