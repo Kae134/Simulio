@@ -160,7 +160,7 @@ npm install
 #### Lancer le serveur de développement :
 
 ```bash
-npm run dev -- --host
+npm run dev --host
 ```
 Le frontend sera alors accessible sur http://localhost:5173
 
