@@ -39,8 +39,8 @@ Ce projet est une API backend développée avec FastAPI et une base de données 
 bash
 Copier
 ```
-git clone https://github.com/ton-utilisateur/mini-simulio.git
-cd mini-simulio
+git clone https://github.com/Kae134/Simulio/edit/main/
+cd Simulio
 ```
 ### 2. Configurer la base de données MySQL
 Lancer MySQL et exécuter :
