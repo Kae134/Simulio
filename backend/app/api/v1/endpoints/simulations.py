@@ -52,6 +52,61 @@ async def simulate(
             detail=f"Erreur lors du calcul: {str(e)}"
         )
 
+@router.post("/save-to-client", response_model=SimulationResponse)
+async def save_simulation_to_client(
+    data: SimulationSaveWithResult,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    try:
+        if not data.client_id:
+            raise HTTPException(
+                status_code=400,
+                detail="ID du client requis pour la sauvegarde"
+            )
+            
+        client = db.query(Client).filter(
+            Client.id == data.client_id,
+            Client.user_id == current_user.id
+        ).first()
+        
+        if not client:
+            raise HTTPException(
+                status_code=404, 
+                detail="Client non trouvé ou non autorisé"
+            )
+
+        simulation = Simulation(
+            data=data.simulation_data.dict(),
+            result=data.result,
+            user_id=current_user.id,
+            client_id=client.id
+        )
+        
+        db.add(simulation)
+        db.commit()
+        db.refresh(simulation)
+
+        logger.info(f"Simulation sauvegardée: ID {simulation.id} pour client {client.name}")
+
+        return SimulationResponse(
+            id=simulation.id,
+            data=simulation.data,
+            result=simulation.result,
+            created_at=simulation.created_at,
+            client_id=simulation.client_id
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur sauvegarde vers client: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erreur lors de la sauvegarde: {str(e)}"
+        )
 
 @router.get("/", response_model=dict)
 async def get_simulations(

@@ -52,6 +52,44 @@
     transform-origin: 70% 70%;
 }
 
+.vc-simuiolet-calendar {
+    --vc-accent-50: #D1C1D8;
+    --vc-accent-100: #BBA2C5;
+    --vc-accent-200: #A483B2;
+    --vc-accent-300: #8D649E;
+    --vc-accent-400: #725080;
+    --vc-accent-500: #573D62;
+    --vc-accent-600: #50395A;
+    --vc-accent-700: #3E2B45;
+    --vc-accent-800: #312338;
+    --vc-accent-900: #251A2A;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: all 0.4s ease;
+}
+.slide-up-enter-from {
+    transform: translateY(32px);
+    opacity: 0;
+}
+.slide-up-enter-to {
+    transform: translateY(0);
+    opacity: 1;
+}
+.slide-up-leave-from {
+    transform: translateY(0);
+    opacity: 1;
+}
+.slide-up-leave-to {
+    transform: translateY(32px);
+    opacity: 0;
+}
+
+.flip-list-move {
+    transition: transform 0.5s ease;
+}
+
 @keyframes wave {
     0% { transform: rotate(0deg); }
     10% { transform: rotate(14deg); }

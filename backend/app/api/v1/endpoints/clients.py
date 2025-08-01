@@ -67,7 +67,7 @@ async def get_clients_for_simulation(
     clients = (
         db.query(Client)
         .filter(Client.user_id == current_user.id)
-        .order_by(Client.name.asc())  # Tri alphabétique pour UX
+        .order_by(Client.name.asc())
         .all()
     )
     
@@ -146,7 +146,7 @@ async def get_client(
 
 @router.put("/{client_id}", response_model=ClientResponse)
 async def update_client(
-    client_data: ClientUpdate,  # Changé vers ClientUpdate
+    client_data: ClientUpdate,
     client: Client = Depends(get_user_client),
     db: Session = Depends(get_db)
 ):

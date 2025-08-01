@@ -1,3 +1,23 @@
+<script setup>
+import { computed } from 'vue'
+import { useAuthStore } from './stores/auth'
+import { useRouter, useRoute } from 'vue-router'
+import logoImage from '@/assets/icons/Simulio_logo.svg'
+import PopUp from './components/PopUp.vue'
+
+const auth = useAuthStore()
+const router = useRouter()
+const route = useRoute()
+
+const authPages = ['/login','/dashboard']
+const isAuthPage = computed(() => authPages.includes(route.path))
+
+const logout = () => {
+  auth.logout()
+  router.push('/')
+}
+</script>
+
 <template>
   <div class="flex flex-col items-center font-primary min-h-screen">
     <nav 
@@ -31,26 +51,8 @@
         </template>
       </div>
     </nav>
-    
+
     <router-view :class="isAuthPage ? 'flex-1' : ''" />
   </div>
+  <PopUp/>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useAuthStore } from './stores/auth'
-import { useRouter, useRoute } from 'vue-router'
-import logoImage from '@/assets/icons/Simulio_logo.svg'
-
-const auth = useAuthStore()
-const router = useRouter()
-const route = useRoute()
-
-const authPages = ['/login','/dashboard']
-const isAuthPage = computed(() => authPages.includes(route.path))
-
-const logout = () => {
-  auth.logout()
-  router.push('/')
-}
-</script>

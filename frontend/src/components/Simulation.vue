@@ -6,11 +6,14 @@ import Calendar from '@/assets/icons/calendar.svg'
 
 import ResultItem from '@/components/ResultItem.vue'
 
+import Separator from './Separator.vue'
+import {pop_up} from '@/stores/popUpStore.js'
+
 
 const auth = useAuthStore()
 const loading = ref(false)
 const result = ref(null)
-const error = ref(null)
+const panelRef = ref(null)
 
 const date = ref(new Date());
 
@@ -67,35 +70,33 @@ const form = reactive({
 const fields = [
     { label: "Prix du bien", id: "C2", type: "slider", model: "C2", attrs: { step: 0.01, required: true } ,'min-max':[0, 3000000]}, 
     { label: "Montant des travaux", id: "TRAVAUX", type: "slider", model: "TRAVAUX", attrs: { step: 0.01, required: true } ,'min-max':[0, 3000000]},
-    { label: "Frais d'assurance (%)", id: "ASSU", type: "pourcentage", model: "ASSU", attrs: { step: 0.01, required: true } },
-    { label: "Durée de votre pret", id: "N", type: "slider", model: "N", attrs: { min: 1, required: true }, 'min-max':[0, 30]},
+    { label: "Frais d'assurance", id: "ASSU", type: "pourcentage", model: "ASSU", attrs: { step: 0.01, required: true } },
+    { label: "Durée de votre prêt", id: "N", type: "slider", model: "N", attrs: { min: 1, required: true }, 'min-max':[0, 30]},
     { label: "Apport", id: "apport", type: "slider", model: "apport", attrs: { step: 0.01, required: true }, 'min-max':[0, 3000000] },
-    { label: "Frais de notaire (%)", id: "fraisNotaire", type: "pourcentage", model: "fraisNotaire", attrs: { step: 0.01, required: true } },
-    { label: "Taux d'intérêt (%)", id: "T", type: "pourcentage", model: "T", attrs: { step: 0.01, required: true } },
-    { label: "Taux d'assurance (%)", id: "ASSU", type: "pourcentage", model: "ASSU", attrs: { step: 0.01, required: true } },
+    { label: "Frais de notaire", id: "fraisNotaire", type: "pourcentage", model: "fraisNotaire", attrs: { step: 0.01, required: true } },
+    { label: "Taux d'intérêt", id: "T", type: "pourcentage", model: "T", attrs: { step: 0.01, required: true } },
+    { label: "Taux d'assurance", id: "ASSU", type: "pourcentage", model: "ASSU", attrs: { step: 0.01, required: true } },
     { label: "Revalorisation du bien", id: "revalorisationBien", type: "pourcentage", model: "revalorisationBien", attrs: { step: 0.01, required: true } },
     { label: "Date", id: "Date", type: "date", model: "Date", attrs: { required: true } },
 ]
 
 async function handleSimulation() {
     loading.value = true
-    result.value = null
-    error.value = null
 
     try {
         const response = await axios.post('http://localhost:8000/api/v1/simulations/simulate', form, {
         headers: { Authorization: `Bearer ${auth.token}` }
         })
         result.value = response.data
-        console.log('Simulation réussie:', result.value)
+        pop_up('Simulation réussie:', 'success')
     } catch (e) {
-        error.value = 'Erreur lors de la simulation.'
+        pop_up('Erreur lors de la simulation.')
     } finally {
         loading.value = false
     }
 }
 
-const CalendarOn = ref(true)
+const CalendarOn = ref(false)
 
 watch(date, (newValue) => {
     if (newValue) {
@@ -109,8 +110,6 @@ const yesterday = new Date()
 yesterday.setDate(yesterday.getDate() - 1);
 
 const disabledDates = ref([{ start: null , end: yesterday }]);
-
-const showResult = ref(false)
 
 const saveInUser = ref(false)
 
@@ -128,8 +127,8 @@ const getClients = async () => {
         console.log('Clients récupérés:', response.data)
         clients.value = response.data 
     } catch (err) {
+        pop_up('Erreur lors de la récupération des clients.')
         console.error('Erreur lors de la récupération des clients:', err)
-        error.value = 'Erreur lors de la récupération des clients.'
     }
 }
 
@@ -151,13 +150,13 @@ watch(selectedClientId, (newValue) => {
 
 const saveSimulation = async () => {
     if (!selectedClientId.value) {
-        error.value = 'Veuillez sélectionner un client avant de sauvegarder la simulation.'
+        pop_up("Veuillez sélectionner un client avant de sauvegarder la simulation.")
         return
     }
 
     if (!result.value) {
-        error.value = 'Aucune simulation à sauvegarder. Veuillez d\'abord effectuer une simulation.'
-        return
+        pop_up("Aucune simulation à sauvegarder. Veuillez d'abord effectuer une simulation.")
+        return 
     }
 
     try {
@@ -172,85 +171,105 @@ const saveSimulation = async () => {
         
         saveInUser.value = false
         selectedClientId.value = null
-        error.value = null
-        
-        alert('Simulation sauvegardée avec succès!')
-        
+
+        toggleSaveUserDisplay()
+        pop_up('Simulation sauvegardée avec succès!', 'success')
     } catch (err) {
-        error.value = 'Erreur lors de la sauvegarde de la simulation.'
+        pop_up('Erreur lors de la sauvegarde de la simulation.')
         console.error('Erreur sauvegarde:', err)
     }
 }
 
-const toggleAddUserDisplay = () => {
+const toggleSaveUserDisplay = () => {
     saveInUser.value = false
     selectedClientId.value = null
-    error.value = null
+}
+
+function handleClickOutside(event) {
+    if (panelRef.value && !panelRef.value.contains(event.target)) {
+        toggleSaveUserDisplay()
+    }
 }
 
 </script>
 
 <template>
-    <div class="flex w-full h-full items-center justify-center">
-        <div class="flex flex-col items-center justify-center gap-4 p-2">
-            <form @submit.prevent="handleSimulation" class="flex flex-col w-full gap-4 border min-w-fit max-w-1/4 border-simuiolet-100/30 rounded-sm shadow-sm p-4">
-            <h1 class=" text-2xl font-light">Achat en residence principale dans l'ancien</h1>
-            <div v-for="field in fields" :key="field.id">
-                <hr v-if="field.type === 'categorie'">
-                <div v-if="field.type === 'slider'">
-                    <label  :for="field.id">{{ field.label }} :</label><br>
-                    <div class="flex w-full place-content-between items-center">
+    <div class="flex flex-wrap w-full h-full items-center justify-center gap-8">
+        <div class="flex flex-col items-center justify-center gap-4 w-[32rem]">
+            <form @submit.prevent="handleSimulation" class="flex flex-col w-full gap-6 border min-w-fit max-w-1/4 border-simuiolet-100/30 rounded-sm shadow-sm p-8">
+                <h1 class=" text-2xl text-center font-light text-simuiolet-400">Achat en résidence principale dans l'ancien</h1>
+                <Separator />
+                <div v-for="field in fields" :key="field.id">
+                    <hr v-if="field.type === 'categorie'">
+                    <div v-if="field.type === 'slider'">
+                        <label  :for="field.id">{{ field.label }} :</label><br>
+                        <div class="flex w-full place-content-between items-center">
+                            <input
+                                :type="field.type"
+                                :id="field.id"
+                                :name="field.id"
+                                v-model.number="form[field.model]"
+                                v-bind="field.attrs"
+                                class="w-full bg-transparent placeholder:text-simuiolet-400 focus:text-simuiolet-600 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simuiolet-200 hover:border-simuiolet-100 shadow-sm focus:shadow"
+                            />
+                        </div>
+                    </div>
+                    <div v-if="field.type === 'pourcentage'" class="flex gap-2 w-full place-content-between">
+                        <label  :for="field.id">{{ field.label }}</label><br>
                         <input
                             :type="field.type"
                             :id="field.id"
                             :name="field.id"
                             v-model.number="form[field.model]"
                             v-bind="field.attrs"
-                            class="w-full bg-transparent placeholder:text-simuiolet-400 focus:text-simuiolet-600 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simuiolet-200 hover:border-simuiolet-100 shadow-sm focus:shadow"
+                            class="w-1/2 border-transparent border-b-1 border-b-slate-200 text-center text-slate-700 placeholder:text-simuiolet-400 focus:text-simuiolet-600 focus:border-simuiolet-200 focus:outline-none focus:ring-0"
                         />
+                        <span>%</span>
+                    </div>
+                    <div v-if="field.type === 'date'" class="flex flex-col items-center justify-center">
+                        <button
+                            type="button"
+                            @click="CalendarOn = !CalendarOn"
+                            class="flex items-center justify-center w-full bg-transparent placeholder:text-simuiolet-400 focus:text-simuiolet-600 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simuiolet-200 hover:border-simuiolet-100 shadow-sm focus:shadow"
+                        >
+                            <span class="flex items-center justify-center w-full">{{ moisEnLettres[date.getMonth() + 1] + ' ' + String(date.getFullYear()) }}</span>
+                            <img :src="Calendar" class="w-8" alt="Calendar" />
+                        </button>
+                        
+                        
+                        <div class="relative w-full flex justify-end">
+                            <Transition
+                            enter-active-class="transition-all duration-300 ease-out"
+                            enter-from-class="transform -translate-y-4 opacity-0"
+                            enter-to-class="transform translate-y-0 opacity-100"
+                            leave-active-class="transition-all duration-200 ease-in"
+                            leave-from-class="transform translate-y-0 opacity-100"
+                            leave-to-class="transform -translate-y-4 opacity-0"
+                            >
+                            <div class="absolute w-full" v-if="CalendarOn">
+                                <VDatePicker
+                                    :disabled-dates="disabledDates"
+                                    color="simuiolet-calendar"
+                                    v-model="date"
+                                    mode="date"
+                                    class="mt-2"
+                                    expanded
+                                />
+                            </div>
+                        </Transition>
+                        </div>
                     </div>
                 </div>
-                <div v-if="field.type === 'pourcentage'" class="flex gap-2 w-full place-content-between">
-                    <label  :for="field.id">{{ field.label }}</label><br>
-                    <input
-                        :type="field.type"
-                        :id="field.id"
-                        :name="field.id"
-                        v-model.number="form[field.model]"
-                        v-bind="field.attrs"
-                        class="w-1/2 border-transparent border-b-1 border-b-slate-200 text-center text-slate-700 focus:border-simuiolet-200 focus:outline-none focus:ring-0"
-                    />
-                    <span>%</span>
-                </div>
-                <div v-if="field.type === 'date'" class="flex flex-col items-center justify-center">
-                    <button
-                        type="button"
-                        @click="CalendarOn = !CalendarOn"
-                        class="flex items-center justify-center w-full bg-transparent placeholder:text-simuiolet-400 focus:text-simuiolet-600 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simuiolet-200 hover:border-simuiolet-100 shadow-sm focus:shadow"
-                    >
-                        <span class="flex items-center justify-center w-full">{{ moisEnLettres[date.getMonth() + 1] + ' ' + String(date.getFullYear()) }}</span>
-                        <img :src="Calendar" class="w-8" alt="Calendar" />
-                    </button>
-    
-                    <VDatePicker
-                    v-if="CalendarOn"
-                    :disabled-dates="disabledDates"
-                    v-model="date"
-                    mode="date"
-                    />
-                </div>
-            </div>
-    
-            <button class="rounded-md bg-simuiolet-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-simuiolet-400 focus:shadow-none active:bg-slate-700 hover:bg-simuiolet-400 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="submit" :disabled="loading">
-                {{ loading ? "Simulation en cours..." : "Simuler" }}
-            </button>
+                
+                <button class="rounded-md bg-simuiolet-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-simuiolet-400 focus:shadow-none active:bg-slate-700 hover:bg-simuiolet-400 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="submit" :disabled="loading">
+                    {{ loading ? "Simulation en cours..." : "Simuler" }}
+                </button>
             </form>
-    
-            <p v-if="error" class="text-red-500 mt-4 p-2 bg-red-50 rounded">{{ error }}</p>
         </div>
-        <div class="flex flex-col w-full max-w-sm gap-4 border border-simuiolet-100/30 rounded-sm shadow-sm p-4">
-            <h1 class="text-2xl font-light">Résultat de la simulation</h1>
-
+        <div class="flex flex-col justify-center items-center w-[32rem] gap-4 border border-simuiolet-100/30 rounded-sm shadow-sm p-8">
+            <h1 class="text-2xl font-light text-center text-simuiolet-400">Résultat de la simulation</h1>
+            <Separator />
+            
             <div class="flex flex-col items-center justify-center gap-2">
                 <h1 class="text-lg text-center">Votre mensualité sera de :</h1>
                 <p class="bg-slate-100 px-4 py-2 w-fit rounded-full text-center text-base font-medium">
@@ -268,7 +287,7 @@ const toggleAddUserDisplay = () => {
                 <ResultItem label="Revenu acquéreur minimum mensuel" :value="result?.result?.salaireMinimum" :border="false" />
             </div>  
 
-            <div v-else class="text-gray-500 italic">
+            <div v-else class="text-gray-500 text-center italic">
                 Aucune simulation n'a encore été effectuée.
             </div>
 
@@ -278,11 +297,9 @@ const toggleAddUserDisplay = () => {
                 </button>
             </div>
 
-            <div v-if="saveInUser === true" class="fixed inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center">
-                <div class="flex flex-col bg-white p-6 rounded shadow-md w-full max-w-md gap-8">
+            <div v-if="saveInUser === true" class="fixed inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center" @click="handleClickOutside">
+                <div class="flex flex-col bg-white p-6 rounded shadow-md w-full max-w-md gap-8" ref="panelRef">
                     <h1 class="text-2xl font-light">Sélectionner un client</h1>
-                    
-                    <p v-if="error" class="text-red-500 text-sm p-2 bg-red-50 rounded">{{ error }}</p>
                     
                     <div class="flex flex-col justify-between items-center mt-8">
                         <div v-if="clients.clients && clients.clients.length > 0" class="flex flex-col h-64 overflow-y-scroll gap-2 w-full">
@@ -293,7 +310,7 @@ const toggleAddUserDisplay = () => {
                                 :class="[
                                     'px-4 py-2 rounded border transition',
                                     selectedClientId === client.id
-                                    ? 'bg-blue-600 text-white border-blue-700'
+                                    ? 'bg-simuiolet-400 text-white border-simuiolet-700'
                                     : 'bg-white text-black border-gray-300 hover:bg-gray-100'
                                 ]"
                             >
@@ -318,10 +335,10 @@ const toggleAddUserDisplay = () => {
                             </button>
                             <button 
                                 type="button" 
-                                @click="toggleAddUserDisplay()" 
+                                @click="toggleSaveUserDisplay()" 
                                 class="rounded-md border border-transparent py-2 px-4 text-center text-sm transition-all text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                             >
-                                Annuler
+                                Retour
                             </button>
                         </div>
                     </div>
