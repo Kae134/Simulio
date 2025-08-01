@@ -26,56 +26,6 @@ Ce projet est une API backend développée avec FastAPI et une base de données 
 
 - cryptography (sécurité)
 
-## 🚀 Installation & lancement
-Prérequis
-- Python 3.11+
-
-- MySQL (base de données)
-
-- Git
-
-### Étapes
-#### Cloner le dépôt :
-
-```bash
-git clone https://github.com/ton-utilisateur/mini-simulio.git
-cd mini-simulio
-```
-
-#### Créer un environnement virtuel et activer :
-
-```bash
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-venv\Scripts\activate     # Windows
-```
-#### Installer les dépendances :
-
-```bash
-pip install -r requirements.txt
-```
-
-#### Importer la base de données MySQL :
-
-```bash
-mysql -u user -p nom_de_la_base < dump.sql
-```
-#### Configurer les variables d’environnement (fichier .env) :
-
-```ini
-DATABASE_URL=mysql+pymysql://user:password@localhost:3306/mini_simu
-SECRET_KEY=une_chaine_secrete_pour_jwt
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-#### Lancer le serveur de développement :
-
-```bash
-uvicorn app.main:app --reload
-```
-#### L'API sera accessible à l'adresse : http://localhost:8000
-
 
 ## 🚀 Installation & Lancement (version manuelle, sans Docker)
 #### 🔧 Prérequis
