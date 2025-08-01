@@ -1,21 +1,30 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import PlusIcon from '@/assets/icons/plus.svg'
 import ReloadIcon from '@/assets/icons/reload.svg'
 import CloseIcon from '@/assets/icons/close.svg'
 import ResultItem from '@/components/ResultItem.vue'
+import SearchIcon from '@/assets/icons/search.svg'
 import { pop_up } from '@/stores/popUpStore'
 
 const auth = useAuthStore()
 const clients = ref(null)
 const panelRef = ref(null)
+const searchInput = ref('')
 
 const form = ref({
     name: '',
     email: '',
     phone: '',
+})
+
+watch(searchInput, (newValue) => {
+    console.log('Search input changed:', newValue)
+    if (newValue || newValue === '') {
+        getClients({ search: newValue })
+    }
 })
 
 const createUser = async () => {
@@ -32,13 +41,41 @@ const createUser = async () => {
     }
 }
 
-const getClients = async () => {
+const getClients = async (options = {}) => {
+    const {
+        includeStats = true,
+        search = '',
+        page = 1,
+        limit = 10
+    } = options
+
+
     try {
-        const response = await axios.get('http://localhost:8000/api/v1/clients/', {
-            headers: { Authorization: `Bearer ${auth.token}` }
+        const params = new URLSearchParams({
+            include_stats: includeStats.toString(),
+            skip: ((page - 1) * limit).toString(),
+            limit: limit.toString()
         })
-        console.log('Clients récupérés:', response.data)
-        clients.value = response.data
+        
+        if (search.trim()) {
+            params.append('search', search.trim())
+        }
+
+        const response = await axios.get(`http://localhost:8000/api/v1/clients/?${params}`, {
+            headers: { 
+                Authorization: `Bearer ${auth.token}`,
+                'Content-Type': 'application/json'
+            },
+            timeout: 10000,
+        })
+
+        if (!response.data || !Array.isArray(response.data.clients)) {
+            throw new Error('Format de réponse invalide du serveur')
+        }
+
+        const { clients: clientsList, pagination, message } = response.data
+        clients.value = clientsList
+        console.log('Clients récupérés:', clients.value[0])
     } catch (err) {
         pop_up('Erreur lors de la récupération des clients:', 'error')
     }
@@ -125,44 +162,75 @@ function handleClickOutside(event) {
     }
 }
 
+const deleteClient = async (id) => {
+    try {
+        const response = await axios.delete(`http://localhost:8000/api/v1/clients/${idUserDetails.value}`, {
+            headers: { Authorization: `Bearer ${auth.token}` }
+        })
+        console.log('Client supprimé:', response.data)
+        pop_up('Client supprimé avec succès!', 'success')
+        getClients()
+        seeMoreOfUser.value = false
+    } catch (err) {
+        pop_up('Erreur lors de la suppression du client:', 'error')
+        console.error('Erreur lors de la suppression du client:', err)
+    }
+}
+
 </script>
 
 <template>
-    <div class="flex flex-col items-start justify-start p-16 gap-4 w-full min-h-1/2">
+    <div class="flex flex-col p-16 w-full overflow-x-auto">
         <h1 class="text-2xl font-light mb-4">Gestion des clients</h1>
         <div class="flex flex-col w-full gap-4">
-            <div>
-                <button class="flex items-center gap-2 cursor-pointer text-lg" @click="toggleAddUserDisplay()"><img :src="PlusIcon" class="w-5" alt=""><span class="link-underline link-underline-black">Add user</span></button>
+            <div class="flex items-center justify-between w-full">
+                <div>
+                    <button class="flex items-center gap-2 cursor-pointer text-lg" @click="toggleAddUserDisplay()"><img :src="PlusIcon" class="w-5" alt=""><span class="link-underline link-underline-black">Add user</span></button>
+                </div>
+                <div class="flex justify-between items-center w-full max-w-sm min-w-[200px]">
+                    <div class="relative">
+                        <input
+                        v-model="searchInput"
+                        class="w-64 bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-3 pr-28 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+                        placeholder="Search clients..." 
+                        />
+                        <button
+                        class="absolute top-2.5 right-3 flex items-center cursor-pointer"
+                        type="button"
+                        >
+                        <img :src="SearchIcon" class="w-4" alt="">
+                        </button> 
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-col items-center justify-between w-full">
-                <div class="flex items-center w-full justify-start gap-4 p-4 font-semibold">
+            <div class="w-full overflow-x-auto">
+                <div class="min-w-max">
+                    <div class="flex items-center justify-start gap-4 p-4 font-semibold">
                     <p class="w-32">Name</p>
                     <p class="w-64">Email</p>
                     <p class="w-48">Numero de telephone</p>
                     <p class="w-32">Nb simulation</p>
-                    <img @click="() => {Reload()}" :src="ReloadIcon" :class="[
-                        'w-4 cursor-pointer transition-transform duration-500',
-                        isRotating ? 'rotate-180' : 'rotate-0']" 
-                    alt="">
-                </div>
-                <hr class="w-full h-1 text-transparent bg-slate-400/50">
-                <div class="flex flex-col w-full h-128 mb-8 overflow-y-scroll bg-white">
-                    <div v-if="clients && clients.clients" class="flex flex-col w-full">
-                        <div v-for="client in clients.clients" :key="client.id" class="flex p-4 bg-white w-full border-b-2 border-slate-200 hover:bg-slate-50 transition duration-300 ease">
-                            <p class="text-lg w-32 overflow-hidden text-ellipsis mr-4">
-                                {{ client.name }}
-                            </p>
-                            <a :href="`mailto:${client.email}`" class="text-lg w-64 overflow-hidden text-ellipsis mr-4 underline text-blue-600 hover:text-blue-800">
-                                {{ client.email }}
-                            </a>
-                            <p class="text-lg w-48 overflow-hidden text-ellipsis mr-4">
-                                {{ client.phone }}
-                            </p>
-                            <p class="text-lg w-32 overflow-hidden text-ellipsis mr-4">
-                                {{ client.stats.total_simulations }}
-                            </p>
-                            <button @click="toggleSeeMoreUser(client.id)" class="text-lg w-64 overflow-hidden text-ellipsis mr-4 underline text-black hover:font-semibold transition duration-3500 ease">Voir plus</button>
+                    <img @click="() => {Reload()}" :src="ReloadIcon" 
+                        :class="['w-4 cursor-pointer transition-transform duration-500', isRotating ? 'rotate-180' : 'rotate-0']" 
+                        alt="">
+                    </div>
+                    <hr class="w-full h-1 text-transparent bg-slate-400/50">
+                    
+                    <div class="flex flex-col h-128 mb-8 overflow-y-scroll bg-white">
+                    <div v-if="clients" class="flex flex-col">
+                        <div v-for="client in clients" :key="client.id" 
+                            class="flex p-4 bg-white border-b-2 flex-shrink-0 border-slate-200 hover:bg-slate-50 transition duration-300 ease">
+                        <p class="text-lg w-32 overflow-hidden text-ellipsis mr-4">{{ client.name }}</p>
+                        <a :href="`mailto:${client.email}`" class="text-lg w-64 overflow-hidden text-ellipsis mr-4 underline text-blue-600 hover:text-blue-800">
+                            {{ client.email }}
+                        </a>
+                        <p class="text-lg w-48 overflow-hidden text-ellipsis mr-4">{{ client.phone }}</p>
+                        <p class="text-lg w-32 overflow-hidden text-ellipsis mr-4">{{ client.stats.total_simulations }}</p>
+                        <button @click="toggleSeeMoreUser(client.id)" class="text-lg w-42 overflow-hidden text-ellipsis mr-4 underline text-black hover:font-semibold transition duration-3500 ease">
+                            Voir plus
+                        </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -225,7 +293,7 @@ function handleClickOutside(event) {
                     <hr class="w-full h-1 text-transparent bg-slate-200/50 mb-4 mt-4">
                     <div class="h-full flex flex-col gap-4">
                         <h2 class="text-xl font-semibold mt-4">Simulations</h2>
-                        <div v-if="userDetails.list_simulations" class="flex flex-col w-full h-1/2 overflow-y-scroll">
+                        <div v-if="userDetails.list_simulations" class="flex flex-col w-full h-1/3 overflow-y-scroll">
                             <div
                                 v-for="simulation in userDetails.list_simulations.simulations"
                                 :key="simulation.id"
@@ -243,6 +311,12 @@ function handleClickOutside(event) {
 
                         </div>
                         <p v-if="!userDetails.list_simulations || userDetails.list_simulations.simulations.length === 0" class="text-gray-200">Aucune simulation trouvée pour ce client.</p>
+                        <button 
+                            @click="deleteClient(userDetails.user_id)" 
+                            class="rounded-md bg-red-300 py-2 px-4 w-64 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-red-400 focus:shadow-none active:bg-red-400 hover:bg-red-400 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                        >
+                            Supprimer le client
+                        </button>
                     </div>
                 </div>
             </div>

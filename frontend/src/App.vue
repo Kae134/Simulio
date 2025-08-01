@@ -22,7 +22,7 @@ const logout = () => {
   <div class="flex flex-col items-center font-primary min-h-screen">
     <nav 
       v-if="!isAuthPage"
-      class="flex gap-4 p-4 text-black w-full justify-between absolute bg-white z-100"
+      class="fixed flex gap-4 p-4 text-black w-full justify-between backdrop-blur-lg bg-white/50 z-100"
     >
       <router-link to="/">
         <img :src="logoImage" alt="" class="w-24 cursor-pointer hover:opacity-80 transition-opacity">

@@ -194,7 +194,7 @@ function handleClickOutside(event) {
 </script>
 
 <template>
-    <div class="flex flex-wrap w-full h-full items-center justify-center gap-8">
+    <div class="flex flex-wrap min-h-full p-16 items-center justify-center gap-8">
         <div class="flex flex-col items-center justify-center gap-4 w-[32rem]">
             <form @submit.prevent="handleSimulation" class="flex flex-col w-full gap-6 border min-w-fit max-w-1/4 border-simuiolet-100/30 rounded-sm shadow-sm p-8">
                 <h1 class=" text-2xl text-center font-light text-simuiolet-400">Achat en résidence principale dans l'ancien</h1>

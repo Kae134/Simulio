@@ -6,6 +6,7 @@
     import ArrowLeft from '@/assets/icons/arrow-left.svg'
     import ArrowRight from '@/assets/icons/arrow-right.svg'
     import { pop_up } from '@/stores/popUpStore'
+    import SimulioLogo from '@/assets/icons/Simulio_logo.svg'
 
     const email = ref('')
     const password = ref('')
@@ -62,6 +63,7 @@
     const swap = ref(false)
 
     const toggleSwap = () => {
+        console.log('Toggling swap state')
         swap.value = !swap.value
     }
 
@@ -70,16 +72,16 @@
 
 
 <template>
-    <div class="flex items-center justify-center w-full flex-1">
+    <div class="xl:flex items-center justify-center w-full flex-1 hidden">
         <div 
             :style="{ transform: swap ? 'translateX(100%)' : 'translateX(0%)' }"
             class="flex flex-col items-center justify-center w-1/2 p-24 gap-12 h-screen z-10 bg-white bg-gradient-to-r from-simugreen-400/30 via-simugreen-400/50 to-simugreen-400/70 transition-transform duration-700 ease-in-out">
             
             <div v-if="!swap" class="flex flex-col items-start justify-center w-164">
                 <h1 class="text-white text-8xl font-bold">Welcome Back !</h1>
-                <h2 class="text-white text-4xl font-light"><span class="font-bold">Boostez vos ventes immobilières</span>
-                Grâce aux simulateurs les plus puissants du marché</h2>
-                    <button @click="toggleSwap()" class="mt-8 flex items-center justify-center text-xl rounded-full border-2 w-64 border-white py-2 px-4 text-center transition-all shadow-sm hover:shadow-lg text-white hover:bg-simugreen-500 hover:border-simugreen-800 focus:text-white focus:bg-simugreen-500 focus:border-simugreen-800 active:border-simugreen-800 active:text-white active:bg-simugreen-400 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                <h2 class="text-white text-4xl font-light"><span class="font-bold">Toujours pas inscrit ?</span>
+                Clique ici !</h2>
+                    <button @click="toggleSwap()" class="mt-8 flex items-center justify-center text-xl rounded-full border-2 w-64 border-white py-2 px-4 text-center transition-all duration-300 ease shadow-sm hover:shadow-lg text-white hover:bg-simugreen-400 hover:border-simugreen-400 focus:text-white focus:bg-simugreen-500 focus:border-simugreen-800 active:border-simugreen-800 active:text-white active:bg-simugreen-400 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
                         Register
                         <img :src="ArrowRight" class="w-6 filter brightness-0 invert" alt="">
                     </button>
@@ -88,7 +90,7 @@
                 <h1 class="text-white text-8xl font-bold">Welcome to Simulio</h1>
                 <h2 class="text-white text-4xl font-light"><span class="font-bold">Boostez vos ventes immobilières</span>
                 Grâce aux simulateurs les plus puissants du marché</h2>
-                <button @click="toggleSwap()" class="mt-8 flex items-center justify-center text-xl rounded-full border-2 border-white w-64 py-2 px-4 text-center transition-all shadow-sm hover:shadow-lg text-white hover:bg-simugreen-500 hover:border-simugreen-800 focus:text-white focus:bg-simugreen-500 focus:border-simugreen-800 active:border-simugreen-800 active:text-white active:bg-simugreen-400 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                <button @click="toggleSwap()" class="mt-8 flex items-center justify-center text-xl rounded-full border-2 border-white w-64 py-2 px-4 text-center transition-all duration-300 ease shadow-sm hover:shadow-lg text-white hover:bg-simugreen-400 hover:border-simugreen-400 focus:text-white focus:bg-simugreen-500 focus:border-simugreen-800 active:border-simugreen-800 active:text-white active:bg-simugreen-400 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
                     <img :src="ArrowLeft" class="w-6 filter brightness-0 invert" alt="">
                     Login
                 </button>
@@ -163,4 +165,86 @@
             </div>
         </div>
     </div>
+    <div class="w-screen h-screen overflow-hidden relative">
+        <div
+        :style="{ transform: swap ? 'translateX(-50%)' : 'translateX(0%)' }"
+        class="flex transition-transform duration-700 ease-in-out w-[200vw] h-screen"
+        >   
+            <div class="flex flex-col items-center justify-center w-screen h-screen bg-white px-16">
+                <h1 class="text-4xl font-bold text-gray-800 mb-16">Welcome back !</h1>
+                <form @submit.prevent="handleLogin" class="flex flex-col w-full max-w-md">
+                <input 
+                    v-model="email" 
+                    type="email" 
+                    placeholder="Email"
+                    class="w-full bg-transparent mb-8 placeholder:text-slate-500 focus:text-simugreen-600 text-simugreen-300 text-lg border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simugreen-200 hover:border-simugreen-100 shadow-sm focus:shadow"
+                />
+                <input 
+                    v-model="password" 
+                    type="password" 
+                    placeholder="Password"
+                    class="w-full bg-transparent mb-8 placeholder:text-slate-500 focus:text-simugreen-600 text-simugreen-300 text-lg border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simugreen-200 hover:border-simugreen-100 shadow-sm focus:shadow"
+                />
+                <button 
+                    type="submit"
+                    class="rounded-md bg-simugreen-500 mb-8 py-2 px-4 border border-transparent text-center text-lg text-white transition-all shadow-md hover:shadow-lg hover:bg-simugreen-400"
+                >
+                    Login
+                </button>
+                </form>
+                <router-link to="/" class="flex items-center justify-center">
+                    <img :src="ArrowLeft" class="w-4" alt="">
+                    <span class="link link-underline link-underline-black text-black">
+                        Back
+                    </span>
+                </router-link>
+                <button @click="toggleSwap" class="mt-8 flex items-center justify-center text-xl rounded-full w-64 py-2 px-4 text-center transition-all duration-300 ease shadow-sm hover:shadow-lg text-white bg-simugreen-500 hover:bg-simugreen-300 hover:border-simugreen-400 focus:text-white focus:bg-simugreen-500 focus:border-simugreen-800 active:border-simugreen-800 active:text-white active:bg-simugreen-400 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                    Register
+                <img :src="ArrowRight" class="w-6 filter brightness-0 invert ml-2" alt="">
+                </button>
+            </div>
+
+            <div class="flex flex-col items-center justify-center w-screen h-screen bg-white px-16">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Not a member ?</h1>
+                <h2 class="text-2xl font-light text-gray-800 mb-16">Create an account here !</h2>
+                <form @submit.prevent="handleRegister" class="flex flex-col w-full max-w-md">
+                <input 
+                    v-model="email"
+                    type="email"
+                    placeholder="Email"
+                    class="w-full bg-transparent mb-8 placeholder:text-slate-500 focus:text-simugreen-600 text-simugreen-300 text-lg border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simugreen-200 hover:border-simugreen-100 shadow-sm focus:shadow"
+                />
+                <input 
+                    v-model="password"
+                    type="password"
+                    placeholder="Password"
+                    class="w-full bg-transparent mb-8 placeholder:text-slate-500 focus:text-simugreen-600 text-simugreen-300 text-lg border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simugreen-200 hover:border-simugreen-100 shadow-sm focus:shadow"
+                />
+                <input 
+                    v-model="confirmPassword"
+                    type="password"
+                    placeholder="Confirm Password"
+                    class="w-full bg-transparent mb-8 placeholder:text-slate-500 focus:text-simugreen-600 text-simugreen-300 text-lg border border-slate-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-simugreen-200 hover:border-simugreen-100 shadow-sm focus:shadow"
+                />
+                <button 
+                    type="submit"
+                    class="rounded-md bg-simugreen-500 mb-8 py-2 px-4 border border-transparent text-center text-lg text-white transition-all shadow-md hover:shadow-lg hover:bg-simugreen-400"
+                >
+                    Register
+                </button>
+                </form>
+                <router-link to="/" class="flex items-center justify-center">
+                    <img :src="ArrowLeft" class="w-4" alt="">
+                    <span class="link link-underline link-underline-black text-black">
+                        Back
+                    </span>
+                </router-link>
+                <button @click="toggleSwap" class="mt-8 flex items-center justify-center text-xl rounded-full w-64 py-2 px-4 text-center transition-all duration-300 ease shadow-sm hover:shadow-lg text-white bg-simugreen-500 hover:bg-simugreen-300 hover:border-simugreen-400 focus:text-white focus:bg-simugreen-500 focus:border-simugreen-800 active:border-simugreen-800 active:text-white active:bg-simugreen-400 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                    <img :src="ArrowLeft" class="w-6 filter brightness-0 invert ml-2" alt="">
+                    Login
+                </button>
+            </div>
+        </div>
+    </div>
+
 </template>
