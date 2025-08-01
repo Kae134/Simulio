@@ -43,14 +43,17 @@ git clone https://github.com/Kae134/Simulio/edit/main/
 cd Simulio
 ```
 ### 2. Configurer la base de données MySQL
-Lancer MySQL et exécuter :
+Lancer MySQL localement :
 
-```sql
-    CREATE DATABASE IF NOT EXISTS simulio CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-    CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
-    GRANT ALL PRIVILEGES ON simulio.* TO 'user'@'localhost';
-    FLUSH PRIVILEGES;
-```
+- Port : 3306
+
+- Utilisateur : user
+
+- Mot de passe : password
+
+- Base de données : simulio
+
+
 #### Importer les données depuis le dump :
 
 ```bash
