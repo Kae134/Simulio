@@ -70,10 +70,11 @@ Créer un fichier .env à la racine du dossier backend avec le contenu suivant :
 ```
 
 ```ini
-DATABASE_URL=mysql+pymysql://user:password@localhost:3306/mini_simu
-SECRET_KEY=une_chaine_secrete_pour_jwt
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=simulio
+DB_USER=user
+DB_PASSWORD=password
 ```
 
 #### Créer un environnement virtuel et activer :
