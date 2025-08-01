@@ -46,9 +46,9 @@ cd Simulio
 Lancer MySQL et exécuter :
 
 ```sql
-    CREATE DATABASE mini_simu;
+    CREATE DATABASE IF NOT EXISTS simulio CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
     CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
-    GRANT ALL PRIVILEGES ON mini_simu.* TO 'user'@'localhost';
+    GRANT ALL PRIVILEGES ON simulio.* TO 'user'@'localhost';
     FLUSH PRIVILEGES;
 ```
 #### Importer les données depuis le dump :
